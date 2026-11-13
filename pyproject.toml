@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bleedtracker"
-version = "0.2.0"
+version = "0.3.0"
 description = "Ranks pages by how likely each one is to lose search impressions next month."
 readme = "README.md"
 license = "MIT"
