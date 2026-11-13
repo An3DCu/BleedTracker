@@ -63,6 +63,29 @@ def test_a_population_move_of_25_percent_holds_the_release():
     assert gate.decision == "HOLD"
 
 
+def test_original_a1_misses_a_move_of_exactly_20_percent():
+    # 1,200 pages against 1,000 is a move of exactly 20%. In floats, 1.2 - 1 is just
+    # under 0.2.
+    gate = pre_release_gate(frame(1000, 0), frame(1200, 1), frame(1000, 2), 30, 31)
+    assert not gate.A1_population_moved
+
+
+def test_fixed_a1_catches_a_move_of_exactly_20_percent():
+    gate = pre_release_gate(
+        frame(1000, 0), frame(1200, 1), frame(1000, 2), 30, 31, original_a1=False
+    )
+    assert gate.A1_population_moved
+    assert gate.decision == "HOLD"
+
+
+def test_fixed_a1_stays_quiet_just_under_20_percent():
+    # 11,999 pages against 10,000 is a move of 19.99%.
+    gate = pre_release_gate(
+        frame(10000, 0), frame(11999, 1), frame(10000, 2), 30, 31, original_a1=False
+    )
+    assert not gate.A1_population_moved
+
+
 def test_a_drifted_feature_holds_the_release():
     gate = pre_release_gate(
         frame(1000, 0), frame(1000, 1, position_shift=10), frame(1000, 2), 30, 31

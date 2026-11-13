@@ -98,6 +98,34 @@ def test_pages_without_a_slot_get_their_disposition():
     assert t.loc["d", "action"] == "monitor"
 
 
+def reasons_table(original: bool) -> pd.DataFrame:
+    # Pages a and b slide and get a positive score. With one editor slot, b slides
+    # below the cut. Pages c and d score zero and hold steady.
+    reasons = {"a": "slipping_and_underclicking", "b": "slipping_reachable_page"}
+    p = pool().assign(reason_code=lambda d: d.content_hash_id.map(reasons).fillna("holding_steady"))
+    queue, gated = build_queue(p, 31, editor_slots=1, shadow_items=1)
+    return queue_table(queue, gated, original_reasons=original).set_index("content_hash_id")
+
+
+def test_original_reasons_call_a_page_below_the_cut_holding_steady():
+    t = reasons_table(original=True)
+    assert pd.isna(t.loc["b", "slot"])
+    assert t.loc["b", "reason_code"] == "holding_steady"
+    assert t.loc["b", "action"] == "monitor"
+
+
+def test_fixed_reasons_keep_the_rule_reason_below_the_cut():
+    t = reasons_table(original=False)
+    assert t.loc["b", "reason_code"] == "slipping_reachable_page"
+    assert t.loc["b", "action"] == "refresh_now"
+
+
+def test_fixed_reasons_leave_queued_gated_and_steady_pages_alone():
+    original, fixed = reasons_table(original=True), reasons_table(original=False)
+    for page in ["a", "c", "d", "e", "f"]:
+        assert fixed.loc[page, "reason_code"] == original.loc[page, "reason_code"]
+
+
 def test_reproduce_without_a_token_exits_with_2(tmp_path, monkeypatch, capsys):
     monkeypatch.delenv("HF_TOKEN", raising=False)
     monkeypatch.chdir(tmp_path)

@@ -99,16 +99,22 @@ def pre_release_gate(
     previous: pd.DataFrame,
     train_days: int,
     score_days: int,
+    original_a1: bool = True,
 ) -> GateResult:
     """Check a release before it ships.
 
     `train` is the training month. `score` is the month about to be scored.
     `previous` is the same clients one month earlier. None of them may carry a label
     for the month being scored.
+
+    My original analysis compared the raw move `abs(ratio - 1)` with 0.20. A move of
+    exactly 20% computes as 0.19999999999999996 and stays quiet. `original_a1` keeps
+    that. Without it, the move is rounded to 4 decimals before the compare.
     """
     if "label_declining" in score.columns:
         raise ValueError("The pre-release gate must not see the outcome it releases.")
     ratio = len(score) / len(previous)
+    move = abs(ratio - 1) if original_a1 else round(abs(ratio - 1), 4)
     per_feature, active_per_day, worst = drift(train, score, train_days, score_days)
     return GateResult(
         pages_scored=len(score),
@@ -120,7 +126,7 @@ def pre_release_gate(
         psi_against_previous_month={f: psi(previous[f], score[f]) for f in FEATURES},
         active_days_per_day_psi=active_per_day,
         worst_psi=worst,
-        A1_population_moved=bool(abs(ratio - 1) >= PRE_REGISTERED["population"]),
+        A1_population_moved=bool(move >= PRE_REGISTERED["population"]),
         A2_features_drifted=bool(worst >= PRE_REGISTERED["psi"]),
     )
 
