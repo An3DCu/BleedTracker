@@ -14,7 +14,7 @@ from bleedtracker.features import build_features, load_page_months
 from bleedtracker.label import attach_label, load_next_month, without_outcome
 from bleedtracker.leakage import leak_probe
 from bleedtracker.model import Deployment, deploy, split_clients
-from bleedtracker.monitor import GateResult, alarm_row, pre_release_gate
+from bleedtracker.monitor import GateResult, alarm_row, month_over_month, pre_release_gate
 from bleedtracker.pipeline import labelled_month
 from bleedtracker.warehouse import Source
 
@@ -130,4 +130,23 @@ def held_out_alarms(frames: dict, ladder: Ladder) -> list[dict]:
                 shadow=ladder.shadow_queue[i + 1],
             )
         )
+    return rows
+
+
+def month_over_month_alarms(frames: dict, ladder: Ladder) -> list[dict]:
+    """A7 for each forward release, in time order.
+
+    It compares the held-out clients with themselves one month earlier.
+    """
+    rows = []
+    for before_pair, now_pair in zip(PAIRS, PAIRS[1:], strict=False):
+        before = frames[before_pair]
+        now = frames[now_pair]
+        result = month_over_month(
+            before[before.client_hash_id.isin(ladder.test_clients)],
+            without_outcome(now[now.client_hash_id.isin(ladder.test_clients)]),
+            days_in_month(before_pair[0]),
+            days_in_month(now_pair[0]),
+        )
+        rows.append({"release": f"{now_pair[0]} to {now_pair[1]}", **result})
     return rows

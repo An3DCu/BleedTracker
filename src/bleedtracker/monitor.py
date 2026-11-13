@@ -24,6 +24,9 @@ PRE_REGISTERED = {
 }
 PSI_WATCH = 0.10
 
+# A7 came after the sealed month was opened. It uses the same line as A2. It only warns.
+A7_PSI = 0.25
+
 
 def psi(expected, actual, bins: int = 10) -> float:
     """Population Stability Index of `actual` against the deciles of `expected`.
@@ -129,6 +132,29 @@ def pre_release_gate(
         A1_population_moved=bool(move >= PRE_REGISTERED["population"]),
         A2_features_drifted=bool(worst >= PRE_REGISTERED["psi"]),
     )
+
+
+def month_over_month(
+    previous: pd.DataFrame, score: pd.DataFrame, previous_days: int, score_days: int
+) -> dict:
+    """A7. Each feature's PSI against the same clients one month earlier.
+
+    `active_days` is read per day. The two months can differ in length. A7 fires when
+    any feature reaches A7_PSI. It warns and never holds a release.
+    """
+    per_feature = {}
+    for feature in FEATURES:
+        if feature == "active_days":
+            value = psi(previous.active_days / previous_days, score.active_days / score_days)
+        else:
+            value = psi(previous[feature], score[feature])
+        per_feature[feature] = value
+    worst = max(per_feature.values())
+    return {
+        "psi_against_previous_month": {k: round(v, 4) for k, v in per_feature.items()},
+        "worst_psi": round(worst, 4),
+        "A7_drifted_since_last_month": bool(worst >= A7_PSI),
+    }
 
 
 def alarm_row(
