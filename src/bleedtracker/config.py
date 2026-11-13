@@ -28,8 +28,8 @@ def days_in_month(month: str) -> int:
 def second_half_start(month: str) -> date:
     """First day of the month's second half.
 
-    The first half gets the extra day in a month with an odd number of days,
-    so a 31-day month splits 16/15 and a 30-day month splits 15/15.
+    The first half gets the extra day in a month with an odd number of days.
+    A 31-day month splits 16/15. A 30-day month splits 15/15.
     """
     year, mon = map(int, month.split("-"))
     return date(year, mon, math.ceil(days_in_month(month) / 2) + 1)

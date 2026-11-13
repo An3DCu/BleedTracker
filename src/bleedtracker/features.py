@@ -50,10 +50,10 @@ def load_page_months(con, source: Source, month: str) -> pd.DataFrame:
 def build_features(pages: pd.DataFrame, original_momentum: bool = True) -> pd.DataFrame:
     """Add the five features and the two gate inputs to a month's slice.
 
-    With `original_momentum`, a page with first-half impressions and no rows in the
-    second half is scored as flat (momentum 1.0) and flagged as having no first-half
-    traffic, as in my original analysis. Without it, that page gets momentum 0.0
-    and keeps its first-half flag.
+    My original analysis scored a page with first-half impressions and no rows in the
+    second half as flat (momentum 1.0). It also flagged that page as having no
+    first-half traffic. `original_momentum` keeps that. Without it, the page gets
+    momentum 0.0 and keeps its first-half flag.
     """
     f = pages.copy()
     f["position"] = f.sum_pos / f.imp

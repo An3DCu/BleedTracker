@@ -641,5 +641,15 @@
         "forest_rank": 19983
       }
     ]
+  },
+  "settings": {
+    "seed": 42,
+    "top_k": 50,
+    "gates": {
+      "riser": 1.2,
+      "spike_share": 0.25,
+      "min_active_days": 25,
+      "min_impressions": 100
+    }
   }
 }

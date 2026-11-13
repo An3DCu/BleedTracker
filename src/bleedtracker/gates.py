@@ -81,9 +81,9 @@ ACTIONS = dict(zip(PLAYBOOK.reason_code, PLAYBOOK.action, strict=True))
 def apply_gates(pool: pd.DataFrame, days_in_month: int, original_coverage: bool = True):
     """Add the gate flags and the `eligible` column to a scored pool.
 
-    With `original_coverage`, a page fails the coverage gate when its live days, as a
-    share of its own month, are under 25/31, as in my original analysis. Without it,
-    a page fails when it was live on fewer than 25 days.
+    My original analysis failed a page on coverage when its live days, as a share of
+    its own month, were under 25/31. `original_coverage` keeps that. Without it, a
+    page fails when it was live on fewer than 25 days.
     """
     d = pool.copy()
     d["active_share"] = d.active_days / days_in_month
