@@ -3,22 +3,18 @@
 Runs only with a token: pytest -m warehouse
 """
 
-import json
-from pathlib import Path
-
 import pytest
 from sklearn.metrics import roc_auc_score
 
 from bleedtracker.metrics import precision_at_k
 from bleedtracker.pipeline import anchor_deployment, labelled_month
+from bleedtracker.reference import load_reference
 from bleedtracker.rule import reason_code
 from bleedtracker.warehouse import MissingTokenError, Source, connect, read_token
 
 pytestmark = pytest.mark.warehouse
 
-REFERENCE = json.loads(
-    (Path(__file__).parents[1] / "reference" / "original.json").read_text(encoding="utf-8")
-)["anchor"]
+REFERENCE = load_reference()["anchor"]
 
 
 @pytest.fixture(scope="module")

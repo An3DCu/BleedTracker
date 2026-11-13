@@ -14,14 +14,14 @@ def synthetic_frame(clients: int = 10, pages_per_client: int = 40, seed: int = 0
         {
             "client_hash_id": np.repeat([f"c{i}" for i in range(clients)], pages_per_client),
             "imp": rng.integers(100, 5000, n).astype(float),
-            "log_imp_mar": 0.0,
+            "log_impressions": 0.0,
             "active_days": rng.integers(1, 32, n),
-            "pos_mar": rng.uniform(1, 40, n),
-            "ctr_mar": rng.uniform(0, 0.05, n),
-            "momentum_in_month": momentum,
+            "position": rng.uniform(1, 40, n),
+            "ctr": rng.uniform(0, 0.05, n),
+            "momentum": momentum,
             "label_declining": (momentum < 0.8).astype(int),
         }
-    ).assign(log_imp_mar=lambda f: np.log1p(f.imp))
+    ).assign(log_impressions=lambda f: np.log1p(f.imp))
 
 
 def test_every_client_lands_on_one_side():
@@ -52,10 +52,10 @@ def test_deploy_scores_the_test_frame():
 
 def test_band_medians_come_from_training_rows_only():
     frame = synthetic_frame()
-    train = frame.iloc[:200].assign(pos_mar=2.0, ctr_mar=0.01)
-    test = frame.iloc[200:].assign(pos_mar=2.0, ctr_mar=0.9)
+    train = frame.iloc[:200].assign(position=2.0, ctr=0.01)
+    test = frame.iloc[200:].assign(position=2.0, ctr=0.9)
     result = deploy(train, test)
-    assert result.medians.to_dict() == pytest.approx({"1-3": 0.01})
+    assert result.medians.to_dict() == pytest.approx({"up to 3": 0.01})
 
 
 def test_forest_sees_only_the_five_features():
