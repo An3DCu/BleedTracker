@@ -8,6 +8,8 @@ import pandas as pd
 from bleedtracker.config import DECLINE_DROP
 from bleedtracker.warehouse import Source, query
 
+OUTCOME_COLUMNS = ["imp_next", "seen_next_month", "label_declining"]
+
 
 def next_month_sql(source: Source, month: str) -> str:
     """SQL for every page's impressions in the label month.
@@ -44,3 +46,8 @@ def attach_label(frame: pd.DataFrame, next_month: pd.DataFrame) -> pd.DataFrame:
     threshold = (1 - DECLINE_DROP) * labelled.imp
     labelled["label_declining"] = (labelled.imp_next < threshold).astype(int)
     return labelled
+
+
+def without_outcome(frame: pd.DataFrame) -> pd.DataFrame:
+    """The same frame with every outcome column taken out."""
+    return frame.drop(columns=[c for c in OUTCOME_COLUMNS if c in frame.columns])

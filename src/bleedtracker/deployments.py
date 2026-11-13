@@ -14,7 +14,6 @@ from sklearn.metrics import roc_auc_score
 from bleedtracker.config import days_in_month
 from bleedtracker.metrics import TOP_K
 from bleedtracker.model import deploy, split_clients
-from bleedtracker.pipeline import labelled_month
 from bleedtracker.queue import (
     EDITOR_SLOTS,
     SHADOW_ITEMS,
@@ -22,7 +21,6 @@ from bleedtracker.queue import (
     page_disposition,
     queue_stats,
 )
-from bleedtracker.warehouse import Source
 
 PAIRS = [
     ("2026-01", "2026-02"),
@@ -52,11 +50,6 @@ def plans() -> list[Plan]:
         kind = "sealed" if test_pair == SEALED_PAIR else "forward"
         result.append(Plan(f"{kind} {test_pair[0]} to {test_pair[1]}", train_pair, test_pair))
     return result
-
-
-def load_frames(con, source: Source, original_momentum: bool = True) -> dict:
-    """Every labelled month the deployments need, read once."""
-    return {pair: labelled_month(con, source, *pair, original_momentum) for pair in PAIRS}
 
 
 @dataclass

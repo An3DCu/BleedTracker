@@ -1,12 +1,34 @@
-"""A tiny warehouse on disk, laid out like the release, with values worked out by hand."""
+"""Shared fixtures.
+
+`tiny_source` is a small warehouse on disk, laid out like the release, with values
+worked out by hand. `warehouse_run` reads the release on Hugging Face once per
+test session.
+"""
 
 from pathlib import Path
+from types import SimpleNamespace
 
 import duckdb
 import pandas as pd
 import pytest
 
-from bleedtracker.warehouse import Source
+from bleedtracker.deployments import run_deployments
+from bleedtracker.release import prepare_frames
+from bleedtracker.warehouse import MissingTokenError, Source, connect, read_token
+
+
+@pytest.fixture(scope="session")
+def warehouse_run():
+    """Every month, the sealed gate and the five deployments, read once."""
+    try:
+        token = read_token()
+    except MissingTokenError:
+        pytest.skip("No Hugging Face token.")
+    con = connect(token)
+    source = Source()
+    frames, gate = prepare_frames(con, source)
+    ladder = run_deployments(frames)
+    return SimpleNamespace(con=con, source=source, frames=frames, gate=gate, ladder=ladder)
 
 
 def _write(con: duckdb.DuckDBPyConnection, rows: list[tuple], path: Path) -> None:
