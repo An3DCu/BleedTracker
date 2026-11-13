@@ -4,16 +4,19 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from bleedtracker.config import days_in_month
+from bleedtracker.deployments import PAIRS, Ladder
 from bleedtracker.leakage import leak_probe, no_outcome_or_snapshot_features
 from bleedtracker.monitor import (
     GateResult,
     alarm_row,
     decisions,
     in_a_row,
+    month_over_month,
     pre_release_gate,
     psi,
 )
-from bleedtracker.release import ReleaseHeld, open_sealed_month
+from bleedtracker.release import ReleaseHeld, month_over_month_alarms, open_sealed_month
 
 
 def test_psi_of_the_same_values_is_zero():
@@ -84,6 +87,51 @@ def test_fixed_a1_stays_quiet_just_under_20_percent():
         frame(10000, 0), frame(11999, 1), frame(10000, 2), 30, 31, original_a1=False
     )
     assert not gate.A1_population_moved
+
+
+def test_a7_stays_quiet_on_a_steady_month():
+    result = month_over_month(frame(5000, 1), frame(5000, 2), 31, 31)
+    assert not result["A7_drifted_since_last_month"]
+
+
+def test_a7_fires_when_a_feature_moved_since_last_month():
+    result = month_over_month(frame(5000, 1), frame(5000, 2, position_shift=10), 31, 31)
+    assert result["A7_drifted_since_last_month"]
+    assert result["worst_psi"] == result["psi_against_previous_month"]["position"]
+
+
+def test_a7_reads_active_days_per_day():
+    previous, score = frame(5000, 1), frame(5000, 2)
+    result = month_over_month(previous, score, 30, 31)
+    per_day = psi(previous.active_days / 30, score.active_days / 31)
+    assert result["psi_against_previous_month"]["active_days"] == round(per_day, 4)
+    assert per_day != psi(previous.active_days, score.active_days)
+
+
+def test_a7_never_changes_the_gate_decision():
+    # The scored month matches its training month. A2 stays quiet. The same clients
+    # moved since the month before. A7 fires. The gate still releases.
+    train = frame(5000, 0, position_shift=10)
+    previous = frame(5000, 1)
+    score = frame(5000, 2, position_shift=10)
+    gate = pre_release_gate(train, score, previous, 31, 31)
+    assert gate.decision == "RELEASE"
+    assert month_over_month(previous, score, 31, 31)["A7_drifted_since_last_month"]
+
+
+def test_a7_runs_on_the_four_forward_releases_for_held_out_clients_only():
+    # Training clients move a lot every month. Held-out clients stay steady. Their live
+    # days follow each month's length.
+    frames = {}
+    for i, pair in enumerate(PAIRS):
+        days = days_in_month(pair[0])
+        share = np.random.default_rng(30 + i).uniform(0.6, 1.0, 3000)
+        held_out = frame(3000, 10 + i).assign(client_hash_id="held_out", active_days=share * days)
+        training = frame(3000, 20 + i, position_shift=10 * i).assign(client_hash_id="training")
+        frames[pair] = pd.concat([held_out, training], ignore_index=True).assign(label_declining=0)
+    rows = month_over_month_alarms(frames, Ladder({"training"}, {"held_out"}))
+    assert [row["release"] for row in rows] == [f"{a} to {b}" for a, b in PAIRS[1:]]
+    assert not any(row["A7_drifted_since_last_month"] for row in rows)
 
 
 def test_a_drifted_feature_holds_the_release():
