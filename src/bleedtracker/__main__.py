@@ -1,4 +1,4 @@
-"""The command line. Run it as python -m bleedtracker reproduce, figures or pick-lines."""
+"""The command line. Run python -m bleedtracker reproduce, upgrades, figures or pick-lines."""
 
 import argparse
 import json
@@ -13,7 +13,8 @@ from bleedtracker.lines import lines_report, pick, score_grid, score_riser_gates
 from bleedtracker.model import split_clients
 from bleedtracker.reference import REFERENCE_FILE, load_reference
 from bleedtracker.release import ReleaseHeld, load_open_frames
-from bleedtracker.results import build_results, prepare_run
+from bleedtracker.results import build_results, load_results, prepare_run
+from bleedtracker.upgrades import build_upgrades, check_originals
 from bleedtracker.warehouse import MissingTokenError, Source, connect
 
 REPORTS = Path("reports")
@@ -76,6 +77,41 @@ def reproduce(reports: Path) -> int:
     return 0 if comparison.all_match else 1
 
 
+def upgrades(reports: Path) -> int:
+    """Rebuild my original results, check them, then run every upgrade next to them."""
+    try:
+        con = connect()
+    except MissingTokenError as error:
+        print(error)
+        return 2
+    source = Source()
+    try:
+        run = prepare_run(con, source)
+    except ReleaseHeld as error:
+        print(error)
+        return 1
+    rebuilt = build_results(con, source, run)
+    results_path = reports / "results.json"
+    print(f"Checking the rebuilt originals against {results_path.as_posix()}")
+    comparison = check_originals(rebuilt, load_results(results_path))
+    print(f"{comparison.matching} of {comparison.numbers} numbers match {results_path.as_posix()}.")
+    if not comparison.all_match:
+        for difference in comparison.differences:
+            print(f"  {difference}")
+        print("No upgrade runs until the originals match.")
+        return 1
+    report, sealed_v2 = build_upgrades(con, source, run, rebuilt["alarms"])
+    report["originals_checked"] = {"numbers": comparison.numbers, "matching": comparison.matching}
+    path = reports / "upgrades.json"
+    print(f"Writing {path.as_posix()}")
+    write_json(report, path)
+    if sealed_v2 is not None:
+        csv_path = reports / "sealed_queue_v2.csv"
+        rows = write_queue_csv(*sealed_v2, csv_path, original_reasons=False)
+        print(f"Writing {csv_path.as_posix()} ({rows:,} pages, kept out of git)")
+    return 0
+
+
 def pick_lines(reports: Path) -> int:
     """Pick rule v2's slide line and riser gate on the training clients of the open months."""
     try:
@@ -116,6 +152,10 @@ def main(argv=None) -> int:
     rebuild.add_argument("--reports", type=Path, default=REPORTS, help="where to write the results")
     redraw = commands.add_parser("figures", help="redraw the figures from reports/results.json")
     redraw.add_argument("--reports", type=Path, default=REPORTS, help="where the results are")
+    upgrade = commands.add_parser(
+        "upgrades", help="run every upgrade next to my original results, after checking them"
+    )
+    upgrade.add_argument("--reports", type=Path, default=REPORTS, help="where to write them")
     lines = commands.add_parser(
         "pick-lines", help="pick rule v2's lines on the training clients of the open months"
     )
@@ -123,6 +163,8 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if args.command == "figures":
         return figures(args.reports)
+    if args.command == "upgrades":
+        return upgrades(args.reports)
     if args.command == "pick-lines":
         return pick_lines(args.reports)
     return reproduce(args.reports)

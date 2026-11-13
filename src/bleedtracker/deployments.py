@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 import pandas as pd
 from sklearn.metrics import roc_auc_score
 
-from bleedtracker.config import days_in_month
+from bleedtracker.config import FEATURES, days_in_month
+from bleedtracker.gates import RISER_GATE
 from bleedtracker.metrics import TOP_K
 from bleedtracker.model import deploy, split_clients
 from bleedtracker.queue import (
@@ -21,6 +22,7 @@ from bleedtracker.queue import (
     page_disposition,
     queue_stats,
 )
+from bleedtracker.rule import SLIP_GATE
 
 PAIRS = [
     ("2026-01", "2026-02"),
@@ -36,7 +38,7 @@ TRIAL_SPLIT = (40, 10)
 
 @dataclass(frozen=True)
 class Plan:
-    """Which labelled month a deployment trains on and which one it judges."""
+    """Which labeled month a deployment trains on and which one it judges."""
 
     name: str
     train_pair: tuple[str, str]
@@ -68,19 +70,35 @@ class Ladder:
     queues: dict = field(default_factory=dict, repr=False)
 
 
-def run_deployments(frames: dict, original_coverage: bool = True) -> Ladder:
-    """Run every deployment and collect its numbers."""
+def run_deployments(
+    frames: dict,
+    original_coverage: bool = True,
+    features: list[str] = FEATURES,
+    slide_line: float = SLIP_GATE,
+    riser_gate: float = RISER_GATE,
+) -> Ladder:
+    """Run every deployment and collect its numbers.
+
+    The defaults run my original version. Version 2 passes its own features and lines.
+    A deployment whose month isn't open, like a held sealed month, is left out.
+    """
     train_clients, test_clients = split_clients(frames[ANCHOR_PAIR])
     ladder = Ladder(train_clients, test_clients)
     for plan in plans():
+        if plan.test_pair not in frames:
+            continue
         train = frames[plan.train_pair]
         test = frames[plan.test_pair]
         deployment = deploy(
             train[train.client_hash_id.isin(train_clients)],
             test[test.client_hash_id.isin(test_clients)],
+            features,
+            slide_line,
         )
         days = days_in_month(plan.test_pair[0])
-        queue, pool = build_queue(deployment.test, days, original_coverage=original_coverage)
+        queue, pool = build_queue(
+            deployment.test, days, original_coverage=original_coverage, riser_gate=riser_gate
+        )
         trial, _ = build_queue(
             deployment.test,
             days,
@@ -88,6 +106,7 @@ def run_deployments(frames: dict, original_coverage: bool = True) -> Ladder:
             shadow_items=TRIAL_SPLIT[1],
             shadow_is_editor=True,
             original_coverage=original_coverage,
+            riser_gate=riser_gate,
         )
         ladder.queues[plan.name] = (queue, pool)
         ladder.rows.append(ladder_row(plan.name, queue, pool, trial))

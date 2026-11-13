@@ -11,12 +11,13 @@ NOTEBOOKS = sorted((Path(__file__).parents[1] / "notebooks").glob("*.ipynb"))
 ID_LIKE = re.compile(r"(client|content)_[0-9a-f]{6,}|[0-9a-f]{32,}")
 
 
-def test_there_are_four_notebooks():
+def test_there_are_five_notebooks():
     assert [p.name for p in NOTEBOOKS] == [
         "01_question_and_data.ipynb",
         "02_rule_and_forest.ipynb",
         "03_validation_and_sealed_month.ipynb",
         "04_queue_and_recommendations.ipynb",
+        "05_upgrades.ipynb",
     ]
 
 
