@@ -1,4 +1,4 @@
-"""Access to the warehouse: the token, the DuckDB connection and queries with retries."""
+"""Access to the warehouse. It covers the token, the DuckDB connection and retried queries."""
 
 import os
 import time

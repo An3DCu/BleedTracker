@@ -12,8 +12,8 @@ def precision_at_k(scores, labels, k: int = TOP_K) -> float:
     """Share of declining pages among the k highest scores.
 
     Pages tied at the cut share the remaining slots. They count with the share of
-    declines among them, which is what a random pick among the tied pages would
-    give on average. The order of the rows never decides the result.
+    declines among them. A random pick among the tied pages gives the same on
+    average. The order of the rows never decides the result.
     """
     s = np.asarray(scores, dtype=float)
     y = np.asarray(labels, dtype=float)

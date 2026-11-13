@@ -39,7 +39,7 @@ def test_signals():
     s = signals(pages(), band_median_ctr(train_frame()))
     # A: 1 - 0.4 / 0.8 = 0.5. D: 1 - 0.6 / 0.8 = 0.25. F: momentum 5 clips to 0.
     assert s.severity.tolist() == pytest.approx([0.5, 0.0, 1.0, 0.25, 0.0, 0.0])
-    # E sits in 10 to 20, which has no learned median. C's CTR 0 is not below a median of 0.
+    # E sits in 10 to 20. That band has no learned median. C's CTR 0 is not below a median of 0.
     assert s.underclick.tolist() == [1, 1, 0, 0, 0, 1]
     # Positions 1 and 20 are both reachable. 25 is not.
     assert s.reachable.tolist() == [1, 1, 0, 1, 1, 1]

@@ -1,4 +1,4 @@
-"""One feature month: the slice of pages and their five features.
+"""The slice of pages in one feature month, with their five features.
 
 Everything here is measured inside the feature month. All of it is known on the month's last day.
 """
