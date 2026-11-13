@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 POSITION_EDGES = [0, 3, 10, 20, np.inf]
-POSITION_BANDS = ["1-3", "4-10", "11-20", "21+"]
+POSITION_BANDS = ["up to 3", "3 to 10", "10 to 20", "over 20"]
 SLIP_GATE = 0.8
 REACHABLE_POSITION = 20
 UNDERCLICK_WEIGHT = 1.0
@@ -29,7 +29,7 @@ def position_band(pos: pd.Series) -> pd.Series:
 
 def band_median_ctr(train: pd.DataFrame) -> pd.Series:
     """Median CTR of each position band, learned on the rows given (training clients only)."""
-    return train.groupby(position_band(train.pos_mar), observed=True)["ctr_mar"].median()
+    return train.groupby(position_band(train.position), observed=True)["ctr"].median()
 
 
 def signals(frame: pd.DataFrame, medians: pd.Series) -> pd.DataFrame:
@@ -37,12 +37,12 @@ def signals(frame: pd.DataFrame, medians: pd.Series) -> pd.DataFrame:
 
     A page whose band has no learned median is never marked as underclicking.
     """
-    band_median = position_band(frame.pos_mar).astype(object).map(medians.to_dict())
+    band_median = position_band(frame.position).astype(object).map(medians.to_dict())
     return pd.DataFrame(
         {
-            "severity": (1 - frame.momentum_in_month / SLIP_GATE).clip(0, 1),
-            "underclick": (frame.ctr_mar < band_median.astype(float)).astype(int),
-            "reachable": frame.pos_mar.between(1, REACHABLE_POSITION).astype(int),
+            "severity": (1 - frame.momentum / SLIP_GATE).clip(0, 1),
+            "underclick": (frame.ctr < band_median.astype(float)).astype(int),
+            "reachable": frame.position.between(1, REACHABLE_POSITION).astype(int),
         },
         index=frame.index,
     )

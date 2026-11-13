@@ -16,7 +16,7 @@ MIN_IMPRESSIONS = 100
 # A page is declining when next month's impressions are more than 20% below this month's.
 DECLINE_DROP = 0.20
 
-FEATURES = ["log_imp_mar", "active_days", "pos_mar", "ctr_mar", "momentum_in_month"]
+FEATURES = ["log_impressions", "active_days", "position", "ctr", "momentum"]
 
 
 def days_in_month(month: str) -> int:

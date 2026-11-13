@@ -51,10 +51,10 @@ def test_features_of_a_steady_page(con, tiny_source):
     steady = f.loc["p_steady"]
     assert steady.imp == 310
     assert steady.active_days == 31
-    assert steady.pos_mar == 2.0
-    assert steady.ctr_mar == pytest.approx(0.1)
-    assert steady.log_imp_mar == pytest.approx(math.log(311))
-    assert steady.momentum_in_month == pytest.approx(150 / 160)
+    assert steady.position == 2.0
+    assert steady.ctr == pytest.approx(0.1)
+    assert steady.log_impressions == pytest.approx(math.log(311))
+    assert steady.momentum == pytest.approx(150 / 160)
     assert steady.spike_share == pytest.approx(10 / 310)
     assert steady.has_first_half_traffic == 1
 
@@ -63,23 +63,23 @@ def test_page_with_no_first_half_is_flat_and_flagged(con, tiny_source):
     for original in (True, False):
         f = build_features(load_page_months(con, tiny_source, "2026-03"), original)
         late = f.set_index("content_hash_id").loc["p_late_only"]
-        assert late.momentum_in_month == 1.0
+        assert late.momentum == 1.0
         assert late.has_first_half_traffic == 0
 
 
 def test_original_momentum_scores_a_vanished_page_as_flat(con, tiny_source):
     f = build_features(load_page_months(con, tiny_source, "2026-03"), original_momentum=True)
     vanish = f.set_index("content_hash_id").loc["p_vanish"]
-    assert vanish.momentum_in_month == 1.0
+    assert vanish.momentum == 1.0
     assert vanish.has_first_half_traffic == 0
 
 
 def test_fixed_momentum_scores_a_vanished_page_as_zero(con, tiny_source):
     f = build_features(load_page_months(con, tiny_source, "2026-03"), original_momentum=False)
     vanish = f.set_index("content_hash_id").loc["p_vanish"]
-    assert vanish.momentum_in_month == 0.0
+    assert vanish.momentum == 0.0
     assert vanish.has_first_half_traffic == 1
-    assert vanish.pos_mar == 3.0
+    assert vanish.position == 3.0
     assert vanish.spike_share == pytest.approx(60 / 110)
 
 

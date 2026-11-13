@@ -56,9 +56,9 @@ def build_features(pages: pd.DataFrame, original_momentum: bool = True) -> pd.Da
     and keeps its first-half flag.
     """
     f = pages.copy()
-    f["pos_mar"] = f.sum_pos / f.imp
-    f["ctr_mar"] = f.clk / f.imp
-    f["log_imp_mar"] = np.log1p(f.imp)
+    f["position"] = f.sum_pos / f.imp
+    f["ctr"] = f.clk / f.imp
+    f["log_impressions"] = np.log1p(f.imp)
     f["spike_share"] = f.max_day_imp / f.imp
 
     early = f.imp_early.where(f.imp_early > 0)
@@ -68,7 +68,7 @@ def build_features(pages: pd.DataFrame, original_momentum: bool = True) -> pd.Da
     else:
         momentum = f.imp_late.fillna(0) / early
         f["has_first_half_traffic"] = early.notna().astype(int)
-    f["momentum_in_month"] = momentum.fillna(1.0)
+    f["momentum"] = momentum.fillna(1.0)
 
     if f[FEATURES].isna().any().any():
         raise ValueError("A feature has a missing value.")

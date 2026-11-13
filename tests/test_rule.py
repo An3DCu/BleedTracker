@@ -7,13 +7,13 @@ from bleedtracker.rule import action_score, band_median_ctr, reason_code, signal
 
 
 def train_frame() -> pd.DataFrame:
-    # 1-3: CTRs 0.02, 0.04, 0.06 -> median 0.04. Position 3.0 is the band's top edge.
-    # 4-10: position 3.5 is already in this band. CTRs 0.01, 0.03 -> median 0.02.
-    # 21+: one page with CTR 0 -> median 0. No training page in 11-20.
+    # up to 3: CTRs 0.02, 0.04, 0.06 -> median 0.04. Position 3.0 is the band's top edge.
+    # 3 to 10: position 3.5 is already in this band. CTRs 0.01, 0.03 -> median 0.02.
+    # over 20: one page with CTR 0 -> median 0. No training page in 10 to 20.
     return pd.DataFrame(
         {
-            "pos_mar": [1.0, 2.0, 3.0, 3.5, 10.0, 25.0],
-            "ctr_mar": [0.02, 0.04, 0.06, 0.01, 0.03, 0.0],
+            "position": [1.0, 2.0, 3.0, 3.5, 10.0, 25.0],
+            "ctr": [0.02, 0.04, 0.06, 0.01, 0.03, 0.0],
         }
     )
 
@@ -22,9 +22,9 @@ def pages() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "imp": [999.0, 500.0, 300.0, 200.0, 400.0, 150.0],
-            "momentum_in_month": [0.4, 1.0, 0.0, 0.6, 0.8, 5.0],
-            "pos_mar": [2.0, 2.0, 25.0, 3.5, 20.0, 1.0],
-            "ctr_mar": [0.01, 0.01, 0.0, 0.05, 0.001, 0.0],
+            "momentum": [0.4, 1.0, 0.0, 0.6, 0.8, 5.0],
+            "position": [2.0, 2.0, 25.0, 3.5, 20.0, 1.0],
+            "ctr": [0.01, 0.01, 0.0, 0.05, 0.001, 0.0],
         },
         index=["A", "B", "C", "D", "E", "F"],
     )
@@ -32,14 +32,14 @@ def pages() -> pd.DataFrame:
 
 def test_band_medians_are_learned_from_the_rows_given():
     medians = band_median_ctr(train_frame())
-    assert medians.to_dict() == pytest.approx({"1-3": 0.04, "4-10": 0.02, "21+": 0.0})
+    assert medians.to_dict() == pytest.approx({"up to 3": 0.04, "3 to 10": 0.02, "over 20": 0.0})
 
 
 def test_signals():
     s = signals(pages(), band_median_ctr(train_frame()))
     # A: 1 - 0.4 / 0.8 = 0.5. D: 1 - 0.6 / 0.8 = 0.25. F: momentum 5 clips to 0.
     assert s.severity.tolist() == pytest.approx([0.5, 0.0, 1.0, 0.25, 0.0, 0.0])
-    # E sits in 11-20, which has no learned median. C's CTR 0 is not below a median of 0.
+    # E sits in 10 to 20, which has no learned median. C's CTR 0 is not below a median of 0.
     assert s.underclick.tolist() == [1, 1, 0, 0, 0, 1]
     # Positions 1 and 20 are both reachable. 25 is not.
     assert s.reachable.tolist() == [1, 1, 0, 1, 1, 1]
