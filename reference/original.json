@@ -224,5 +224,116 @@
       "eligible_not_sliding": 9259,
       "eligible_sliding_below_the_cut": 9916
     }
+  },
+  "pre_registered_thresholds": {
+    "population": 0.2,
+    "psi": 0.25,
+    "base_rate": 0.1,
+    "queue_margin": 0.1,
+    "shadow_close_months": 2,
+    "promotion_months": 2
+  },
+  "sealed_gate": {
+    "pages_scored": 26554,
+    "pages_previous_month": 25595,
+    "pages_vs_previous_month": 1.0375,
+    "nulls_in_features": 0,
+    "psi_against_training": {
+      "log_imp_mar": 0.0044,
+      "active_days": 0.0301,
+      "pos_mar": 0.1459,
+      "ctr_mar": 0.0214,
+      "momentum_in_month": 0.0815
+    },
+    "psi_against_previous_month": {
+      "log_imp_mar": 0.0049,
+      "active_days": 0.0262,
+      "pos_mar": 0.4224,
+      "ctr_mar": 0.0149,
+      "momentum_in_month": 0.0395
+    },
+    "active_days_per_day_psi": 0.01,
+    "worst_psi": 0.1459,
+    "A1_population_moved": false,
+    "A2_features_drifted": false,
+    "decision": "RELEASE"
+  },
+  "alarms": [
+    {
+      "release": "2026-02 to 2026-03",
+      "A1_population_moved": false,
+      "A2_features_drifted": false,
+      "A3_base_rate_moved": false,
+      "A4_queue_below_margin": false,
+      "A5_shadow_lift_not_positive": true,
+      "A6_trial_costs_precision": true,
+      "base_rate_move_points": -4.2,
+      "queue_margin_points": 68.6
+    },
+    {
+      "release": "2026-03 to 2026-04",
+      "A1_population_moved": true,
+      "A2_features_drifted": false,
+      "A3_base_rate_moved": true,
+      "A4_queue_below_margin": false,
+      "A5_shadow_lift_not_positive": false,
+      "A6_trial_costs_precision": true,
+      "base_rate_move_points": 30.0,
+      "queue_margin_points": 40.6
+    },
+    {
+      "release": "2026-04 to 2026-05",
+      "A1_population_moved": false,
+      "A2_features_drifted": false,
+      "A3_base_rate_moved": true,
+      "A4_queue_below_margin": false,
+      "A5_shadow_lift_not_positive": false,
+      "A6_trial_costs_precision": false,
+      "base_rate_move_points": -10.6,
+      "queue_margin_points": 57.2
+    },
+    {
+      "release": "2026-05 to 2026-06",
+      "A1_population_moved": false,
+      "A2_features_drifted": false,
+      "A3_base_rate_moved": true,
+      "A4_queue_below_margin": false,
+      "A5_shadow_lift_not_positive": true,
+      "A6_trial_costs_precision": true,
+      "base_rate_move_points": 34.8,
+      "queue_margin_points": 24.4
+    }
+  ],
+  "decisions": {
+    "close_shadow_queue": false,
+    "promote_trial": false
+  },
+  "leak_probe_open": {
+    "five_features": {
+      "precision_at_50": 0.94,
+      "auc": 0.7162
+    },
+    "with_next_month_impressions": {
+      "precision_at_50": 1.0,
+      "auc": 0.9285
+    },
+    "with_the_label": {
+      "precision_at_50": 1.0,
+      "auc": 1.0
+    }
+  },
+  "leak_probe_sealed": {
+    "five_features": {
+      "precision_at_50": 1.0,
+      "auc": 0.6926
+    },
+    "with_next_month_impressions": {
+      "precision_at_50": 1.0,
+      "auc": 0.92
+    },
+    "with_the_label": {
+      "precision_at_50": 1.0,
+      "auc": 1.0
+    }
   }
 }
