@@ -205,6 +205,13 @@
       "investigate_quiet_risk": 10,
       "verify_then_review": 5
     },
+    "action_mix_editor": {
+      "rewrite_title_and_refresh": 45,
+      "verify_then_review": 5
+    },
+    "action_mix_shadow": {
+      "investigate_quiet_risk": 10
+    },
     "reason_mix": {
       "slipping_and_underclicking": 45,
       "quiet_risk_model_only": 10,

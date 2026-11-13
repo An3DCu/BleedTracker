@@ -161,6 +161,8 @@ def sealed_summary(queue: pd.DataFrame, pool: pd.DataFrame) -> dict:
         "editor_slots": len(editor),
         "shadow_items": len(shadow),
         "action_mix": queue.action.value_counts().to_dict(),
+        "action_mix_editor": editor.action.value_counts().to_dict(),
+        "action_mix_shadow": shadow.action.value_counts().to_dict(),
         "reason_mix": queue.reason_code.value_counts().to_dict(),
         "distinct_clients_editor": int(editor.client_hash_id.nunique()),
         "editor_precision": round(float(editor.label_declining.mean()), 4),

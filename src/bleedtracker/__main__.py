@@ -8,6 +8,7 @@ from pathlib import Path
 from bleedtracker.check import compare_with_reference
 from bleedtracker.deployments import plans
 from bleedtracker.export import write_queue_csv
+from bleedtracker.figures import draw_all
 from bleedtracker.reference import REFERENCE_FILE, load_reference
 from bleedtracker.release import ReleaseHeld
 from bleedtracker.results import build_results, prepare_run
@@ -21,6 +22,23 @@ def write_json(data: dict, path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(data, indent=2, ensure_ascii=False, allow_nan=False)
     path.write_bytes((text + "\n").encode("utf-8"))
+
+
+def draw_figures(results: dict, reports: Path) -> None:
+    """Draw the three figures into the reports folder."""
+    folder = reports / "figures"
+    written = draw_all(results, folder)
+    print(f"Drawing {len(written) // 2} figures in {folder.as_posix()} as PNG and SVG")
+
+
+def figures(reports: Path) -> int:
+    """Redraw the figures from the results file. No token is needed."""
+    results_path = reports / "results.json"
+    if not results_path.is_file():
+        print(f"{results_path.as_posix()} not found. Run python -m bleedtracker reproduce first.")
+        return 2
+    draw_figures(json.loads(results_path.read_text(encoding="utf-8")), reports)
+    return 0
 
 
 def reproduce(reports: Path) -> int:
@@ -46,6 +64,8 @@ def reproduce(reports: Path) -> int:
     rows = write_queue_csv(queue, pool, csv_path)
     print(f"Writing {csv_path.as_posix()} ({rows:,} pages, kept out of git)")
 
+    draw_figures(results, reports)
+
     print(f"Checking against {REFERENCE_FILE.parent.name}/{REFERENCE_FILE.name}")
     comparison = compare_with_reference(results, load_reference())
     print(comparison.summary())
@@ -61,7 +81,11 @@ def main(argv=None) -> int:
         "reproduce", help="rebuild every result from the warehouse and check it"
     )
     rebuild.add_argument("--reports", type=Path, default=REPORTS, help="where to write the results")
+    redraw = commands.add_parser("figures", help="redraw the figures from reports/results.json")
+    redraw.add_argument("--reports", type=Path, default=REPORTS, help="where the results are")
     args = parser.parse_args(argv)
+    if args.command == "figures":
+        return figures(args.reports)
     return reproduce(args.reports)
 
 
