@@ -17,7 +17,10 @@ def labelled_month(
 
 
 def anchor_deployment(frame: pd.DataFrame) -> tuple[Deployment, set, set]:
-    """The first deployment: split one month's clients, train on 70%, judge on the rest."""
+    """The first deployment. It splits one month's clients and trains on 70% of them.
+
+    The other 30% are judged.
+    """
     train_clients, test_clients = split_clients(frame)
     train = frame[frame.client_hash_id.isin(train_clients)]
     test = frame[frame.client_hash_id.isin(test_clients)]

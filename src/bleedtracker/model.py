@@ -15,7 +15,7 @@ FOREST_PARAMS = {"n_estimators": 300, "min_samples_leaf": 400, "n_jobs": -1, "ra
 
 
 def split_clients(frame: pd.DataFrame, seed: int = SEED) -> tuple[set, set]:
-    """Split the clients, not the pages: every client's pages land on one side only."""
+    """Split by client. Every client's pages land on one side only."""
     splitter = GroupShuffleSplit(n_splits=1, test_size=TEST_SHARE, random_state=seed)
     train_idx, test_idx = next(splitter.split(frame, groups=frame.client_hash_id))
     train_clients = set(frame.client_hash_id.iloc[train_idx])
