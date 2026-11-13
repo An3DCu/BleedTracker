@@ -4,8 +4,10 @@ The sections and their names follow `reference/original.json`. A few sections ca
 extra values the original never stored. Those are kept and left unchecked.
 """
 
+import json
 import sys
 from collections.abc import Callable
+from pathlib import Path
 
 import duckdb
 import matplotlib
@@ -48,6 +50,7 @@ from bleedtracker.release import (
 )
 from bleedtracker.rule import reason_code
 
+RESULTS_FILE = Path(__file__).resolve().parents[2] / "reports" / "results.json"
 ANCHOR_K = [10, 25, 50, 100, 250]
 ABOUT = (
     "Rebuilt by python -m bleedtracker reproduce from warehouse build v20260703. "
@@ -99,6 +102,11 @@ def settings() -> dict:
             "min_impressions": MIN_IMPRESSIONS,
         },
     }
+
+
+def load_results(path: Path = RESULTS_FILE) -> dict:
+    """Read the committed results file."""
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def environment() -> dict:
