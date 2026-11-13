@@ -1,6 +1,6 @@
 """One feature month: the slice of pages and their five features.
 
-Everything here is measured inside the feature month, so it is known on the month's last day.
+Everything here is measured inside the feature month. All of it is known on the month's last day.
 """
 
 import numpy as np

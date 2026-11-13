@@ -12,8 +12,8 @@ from bleedtracker.warehouse import Source, query
 def next_month_sql(source: Source, month: str) -> str:
     """SQL for every page's impressions in the label month.
 
-    No slice rules here. A page that stops appearing is an outcome, so the lookup
-    keeps every page with search data available.
+    No slice rules here. A page that stops appearing is an outcome. The lookup keeps
+    every page with search data available.
     """
     return f"""
         SELECT f.content_hash_id,
