@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-from bleedtracker.gates import ACTIONS, apply_gates
+from bleedtracker.gates import ACTIONS, RISER_GATE, apply_gates
 
 EDITOR_SLOTS = 50
 SHADOW_ITEMS = 10
@@ -16,6 +16,7 @@ def build_queue(
     shadow_items: int = SHADOW_ITEMS,
     shadow_is_editor: bool = False,
     original_coverage: bool = True,
+    riser_gate: float = RISER_GATE,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Build the queue from a pool scored by the rule and the forest.
 
@@ -26,7 +27,7 @@ def build_queue(
 
     Returns the queue and the pool with its gate flags.
     """
-    d = apply_gates(scored.reset_index(drop=True), days_in_month, original_coverage)
+    d = apply_gates(scored.reset_index(drop=True), days_in_month, original_coverage, riser_gate)
     d["row_id"] = np.arange(len(d))
     d["forest_rank_pct"] = (d.forest_score.rank(pct=True) * 100).round(1)
 

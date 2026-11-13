@@ -17,6 +17,11 @@ import pandas as pd
 POSITION_EDGES = [0, 3, 10, 20, np.inf]
 POSITION_BANDS = ["up to 3", "3 to 10", "10 to 20", "over 20"]
 SLIP_GATE = 0.8
+
+# Rule v2's lines, picked on the training clients of the four open month pairs by
+# python -m bleedtracker pick-lines. See reports/v2_lines.json.
+V2_SLIDE_LINE = 0.65
+V2_RISER_GATE = 1.2
 REACHABLE_POSITION = 20
 UNDERCLICK_WEIGHT = 1.0
 REACHABLE_WEIGHT = 0.5
@@ -32,15 +37,16 @@ def band_median_ctr(train: pd.DataFrame) -> pd.Series:
     return train.groupby(position_band(train.position), observed=True)["ctr"].median()
 
 
-def signals(frame: pd.DataFrame, medians: pd.Series) -> pd.DataFrame:
+def signals(frame: pd.DataFrame, medians: pd.Series, slide_line: float = SLIP_GATE):
     """The rule's three signals for every page.
 
     A page whose band has no learned median is never marked as underclicking.
+    `slide_line` is the momentum below which a page counts as sliding.
     """
     band_median = position_band(frame.position).astype(object).map(medians.to_dict())
     return pd.DataFrame(
         {
-            "severity": (1 - frame.momentum / SLIP_GATE).clip(0, 1),
+            "severity": (1 - frame.momentum / slide_line).clip(0, 1),
             "underclick": (frame.ctr < band_median.astype(float)).astype(int),
             "reachable": frame.position.between(1, REACHABLE_POSITION).astype(int),
         },
@@ -48,9 +54,9 @@ def signals(frame: pd.DataFrame, medians: pd.Series) -> pd.DataFrame:
     )
 
 
-def action_score(frame: pd.DataFrame, medians: pd.Series) -> pd.Series:
+def action_score(frame: pd.DataFrame, medians: pd.Series, slide_line: float = SLIP_GATE):
     """The rule's score. Zero for every page that isn't sliding."""
-    s = signals(frame, medians)
+    s = signals(frame, medians, slide_line)
     return (
         s.severity
         * np.log1p(frame.imp)
@@ -59,9 +65,9 @@ def action_score(frame: pd.DataFrame, medians: pd.Series) -> pd.Series:
     )
 
 
-def reason_code(frame: pd.DataFrame, medians: pd.Series) -> pd.Series:
+def reason_code(frame: pd.DataFrame, medians: pd.Series, slide_line: float = SLIP_GATE):
     """The reason an editor reads next to each page."""
-    s = signals(frame, medians)
+    s = signals(frame, medians, slide_line)
     codes = np.select(
         [
             s.severity == 0,

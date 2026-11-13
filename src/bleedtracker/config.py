@@ -18,6 +18,9 @@ DECLINE_DROP = 0.20
 
 FEATURES = ["log_impressions", "active_days", "position", "ctr", "momentum"]
 
+# The second version measures the two calendar-shaped features per day.
+FEATURES_V2 = ["log_impressions", "active_share", "position", "ctr", "momentum"]
+
 
 def days_in_month(month: str) -> int:
     """Number of days in a month written as "YYYY-MM"."""

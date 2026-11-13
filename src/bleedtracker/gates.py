@@ -78,12 +78,18 @@ PLAYBOOK = pd.DataFrame(
 ACTIONS = dict(zip(PLAYBOOK.reason_code, PLAYBOOK.action, strict=True))
 
 
-def apply_gates(pool: pd.DataFrame, days_in_month: int, original_coverage: bool = True):
+def apply_gates(
+    pool: pd.DataFrame,
+    days_in_month: int,
+    original_coverage: bool = True,
+    riser_gate: float = RISER_GATE,
+):
     """Add the gate flags and the `eligible` column to a scored pool.
 
     My original analysis failed a page on coverage when its live days, as a share of
     its own month, were under 25/31. `original_coverage` keeps that. Without it, a
-    page fails when it was live on fewer than 25 days.
+    page fails when it was live on fewer than 25 days. A page whose momentum reaches
+    `riser_gate` was rising.
     """
     d = pool.copy()
     d["active_share"] = d.active_days / days_in_month
@@ -92,7 +98,7 @@ def apply_gates(pool: pd.DataFrame, days_in_month: int, original_coverage: bool 
     else:
         low_coverage = d.active_days < COVERAGE_DAYS
     d["gate_no_first_half"] = (d.has_first_half_traffic == 0).astype(int)
-    d["gate_riser"] = ((d.momentum >= RISER_GATE) & (d.gate_no_first_half == 0)).astype(int)
+    d["gate_riser"] = ((d.momentum >= riser_gate) & (d.gate_no_first_half == 0)).astype(int)
     d["gate_verify"] = ((d.spike_share >= SPIKE_GATE) | low_coverage).astype(int)
     d["eligible"] = ((d.gate_no_first_half == 0) & (d.gate_riser == 0)).astype(int)
     return d
