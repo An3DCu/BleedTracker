@@ -6,7 +6,13 @@ Everything here is measured inside the feature month. All of it is known on the 
 import numpy as np
 import pandas as pd
 
-from bleedtracker.config import FEATURES, MIN_HISTORY, MIN_IMPRESSIONS, second_half_start
+from bleedtracker.config import (
+    FEATURES,
+    MIN_HISTORY,
+    MIN_IMPRESSIONS,
+    days_in_month,
+    second_half_start,
+)
 from bleedtracker.warehouse import Source, query
 
 
@@ -73,3 +79,24 @@ def build_features(pages: pd.DataFrame, original_momentum: bool = True) -> pd.Da
     if f[FEATURES].isna().any().any():
         raise ValueError("A feature has a missing value.")
     return f.reset_index(drop=True)
+
+
+def per_day(frame: pd.DataFrame, month: str) -> pd.DataFrame:
+    """Measure the two calendar-shaped features per day.
+
+    `active_share` is the live days divided by the days in the month. Momentum
+    divides the second half's impressions per day by the first half's. A flat page
+    then scores 1.0 in a 31-day month too. The frame needs the fixed momentum from
+    `build_features(..., original_momentum=False)`.
+    """
+    days = days_in_month(month)
+    early_days = second_half_start(month).day - 1
+    late_days = days - early_days
+    f = frame.copy()
+    f["active_share"] = f.active_days / days
+    early = f.imp_early.where(f.imp_early > 0)
+    late = f.imp_late.fillna(0)
+    f["momentum"] = ((late / late_days) / (early / early_days)).fillna(1.0)
+    if (f.has_first_half_traffic != early.notna().astype(int)).any():
+        raise ValueError("Per-day features need the fixed momentum and its first-half flag.")
+    return f

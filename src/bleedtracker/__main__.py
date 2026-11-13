@@ -1,4 +1,4 @@
-"""The command line. Run it as python -m bleedtracker reproduce."""
+"""The command line. Run it as python -m bleedtracker reproduce, figures or pick-lines."""
 
 import argparse
 import json
@@ -6,11 +6,13 @@ import sys
 from pathlib import Path
 
 from bleedtracker.check import compare_with_reference
-from bleedtracker.deployments import plans
+from bleedtracker.deployments import ANCHOR_PAIR, plans
 from bleedtracker.export import write_queue_csv
 from bleedtracker.figures import draw_all
+from bleedtracker.lines import lines_report, pick, score_grid, score_riser_gates
+from bleedtracker.model import split_clients
 from bleedtracker.reference import REFERENCE_FILE, load_reference
-from bleedtracker.release import ReleaseHeld
+from bleedtracker.release import ReleaseHeld, load_open_frames
 from bleedtracker.results import build_results, prepare_run
 from bleedtracker.warehouse import MissingTokenError, Source, connect
 
@@ -74,6 +76,37 @@ def reproduce(reports: Path) -> int:
     return 0 if comparison.all_match else 1
 
 
+def pick_lines(reports: Path) -> int:
+    """Pick rule v2's slide line and riser gate on the training clients of the open months."""
+    try:
+        con = connect()
+    except MissingTokenError as error:
+        print(error)
+        return 2
+    print("Reading the four open months")
+    frames = load_open_frames(con, Source(), original_momentum=False)
+    train_clients, _ = split_clients(frames[ANCHOR_PAIR])
+    print(f"Step 1 scores 80 pairs of lines on the {len(train_clients)} training clients")
+    slide_scores = score_grid(frames, train_clients)
+    slide_line = pick(slide_scores)["slide_line"]
+    print(f"Step 2 scores 10 riser gates by the shadow queue at slide line {slide_line}")
+    riser_scores = score_riser_gates(frames, train_clients, slide_line)
+    report = lines_report(slide_scores, riser_scores, frames, train_clients)
+    path = reports / "v2_lines.json"
+    print(f"Writing {path.as_posix()}")
+    write_json(report, path)
+    print(
+        f"Slide line {slide_line} scores {report['step_1_picked']['score']} "
+        f"against {report['step_1_original_lines']['score']} for 0.8."
+    )
+    print(
+        f"Riser gate {report['picked']['riser_gate']} gives the shadow queue "
+        f"{report['step_2_picked']['score']} against {report['step_2_original_gate']['score']} "
+        "for 1.20."
+    )
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="python -m bleedtracker")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -83,9 +116,15 @@ def main(argv=None) -> int:
     rebuild.add_argument("--reports", type=Path, default=REPORTS, help="where to write the results")
     redraw = commands.add_parser("figures", help="redraw the figures from reports/results.json")
     redraw.add_argument("--reports", type=Path, default=REPORTS, help="where the results are")
+    lines = commands.add_parser(
+        "pick-lines", help="pick rule v2's lines on the training clients of the open months"
+    )
+    lines.add_argument("--reports", type=Path, default=REPORTS, help="where to write the pick")
     args = parser.parse_args(argv)
     if args.command == "figures":
         return figures(args.reports)
+    if args.command == "pick-lines":
+        return pick_lines(args.reports)
     return reproduce(args.reports)
 
 
