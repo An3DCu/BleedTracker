@@ -17,6 +17,17 @@ from bleedtracker.release import prepare_frames
 from bleedtracker.warehouse import MissingTokenError, Source, connect, read_token
 
 
+class WarehouseRun(SimpleNamespace):
+    """The months, the gate and the ladder from one read of the warehouse.
+
+    Its printed form names no client or page.
+    A failing test never shows them.
+    """
+
+    def __repr__(self) -> str:
+        return "WarehouseRun(frames, gate, ladder)"
+
+
 @pytest.fixture(scope="session")
 def warehouse_run():
     """Every month, the sealed gate and the five deployments, read once."""
@@ -28,7 +39,7 @@ def warehouse_run():
     source = Source()
     frames, gate = prepare_frames(con, source)
     ladder = run_deployments(frames)
-    return SimpleNamespace(con=con, source=source, frames=frames, gate=gate, ladder=ladder)
+    return WarehouseRun(con=con, source=source, frames=frames, gate=gate, ladder=ladder)
 
 
 def _write(con: duckdb.DuckDBPyConnection, rows: list[tuple], path: Path) -> None:

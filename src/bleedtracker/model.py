@@ -1,6 +1,6 @@
 """The client split, the forest, and one deployment of the rule and the forest side by side."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
@@ -30,10 +30,13 @@ def make_forest() -> RandomForestClassifier:
 
 @dataclass
 class Deployment:
-    """The rule and the forest, fitted on one frame and judged on another."""
+    """The rule and the forest, fitted on one frame and judged on another.
 
-    train: pd.DataFrame
-    test: pd.DataFrame
+    The frames hold page and client ids. They stay out of the printed form.
+    """
+
+    train: pd.DataFrame = field(repr=False)
+    test: pd.DataFrame = field(repr=False)
     medians: pd.Series
     forest: RandomForestClassifier
 
@@ -42,7 +45,7 @@ def deploy(train: pd.DataFrame, test: pd.DataFrame) -> Deployment:
     """Fit the rule's band medians and the forest on `train`, then score `test`.
 
     Both frames need the features and the label. The test frame gets the rule's
-    score and reason code and the forest's probability of a decline.
+    score, its reason code and the forest's probability of a decline.
     """
     medians = band_median_ctr(train)
     forest = make_forest().fit(train[FEATURES], train.label_declining)

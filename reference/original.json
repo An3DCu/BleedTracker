@@ -335,5 +335,311 @@
       "precision_at_50": 1.0,
       "auc": 1.0
     }
+  },
+  "sealed_comparison": [
+    {
+      "scorer": "rule",
+      "precision_at_50": 0.98,
+      "auc": 0.633,
+      "impressions_lost_by_its_50": 634253,
+      "median_page_size": 9700
+    },
+    {
+      "scorer": "forest",
+      "precision_at_50": 1.0,
+      "auc": 0.6926,
+      "impressions_lost_by_its_50": 150432,
+      "median_page_size": 1594
+    },
+    {
+      "scorer": "steepest_slide",
+      "precision_at_50": 0.94,
+      "auc": 0.6875,
+      "impressions_lost_by_its_50": 43690,
+      "median_page_size": 218.0
+    },
+    {
+      "scorer": "lowest_ctr",
+      "precision_at_50": 0.82,
+      "auc": 0.5739,
+      "impressions_lost_by_its_50": 11286,
+      "median_page_size": 205.0
+    },
+    {
+      "scorer": "biggest_pages",
+      "precision_at_50": 0.56,
+      "auc": 0.4938,
+      "impressions_lost_by_its_50": 1356260,
+      "median_page_size": 110032
+    },
+    {
+      "scorer": "ctr_fix_flag",
+      "precision_at_50": 0.64,
+      "auc": 0.5259,
+      "impressions_lost_by_its_50": 1522521,
+      "median_page_size": 101733
+    },
+    {
+      "scorer": "random_50",
+      "precision_at_50": 0.736,
+      "auc": 0.5,
+      "impressions_lost_by_its_50": null,
+      "median_page_size": null
+    }
+  ],
+  "sealed_precision_at_k": [
+    {
+      "K": 10,
+      "rule": 1.0,
+      "forest": 1.0,
+      "base_rate": 0.7362,
+      "rule_margin_points": 26.4
+    },
+    {
+      "K": 25,
+      "rule": 1.0,
+      "forest": 1.0,
+      "base_rate": 0.7362,
+      "rule_margin_points": 26.4
+    },
+    {
+      "K": 50,
+      "rule": 0.98,
+      "forest": 1.0,
+      "base_rate": 0.7362,
+      "rule_margin_points": 24.4
+    },
+    {
+      "K": 75,
+      "rule": 0.9867,
+      "forest": 0.9867,
+      "base_rate": 0.7362,
+      "rule_margin_points": 25.0
+    },
+    {
+      "K": 100,
+      "rule": 0.98,
+      "forest": 0.98,
+      "base_rate": 0.7362,
+      "rule_margin_points": 24.4
+    },
+    {
+      "K": 150,
+      "rule": 0.98,
+      "forest": 0.9867,
+      "base_rate": 0.7362,
+      "rule_margin_points": 24.4
+    },
+    {
+      "K": 200,
+      "rule": 0.975,
+      "forest": 0.98,
+      "base_rate": 0.7362,
+      "rule_margin_points": 23.9
+    },
+    {
+      "K": 250,
+      "rule": 0.972,
+      "forest": 0.956,
+      "base_rate": 0.7362,
+      "rule_margin_points": 23.6
+    }
+  ],
+  "per_client_queue": {
+    "rule": 0.825,
+    "forest": 0.775,
+    "clients": 8
+  },
+  "uncertainty": {
+    "forest_minus_rule_points": [
+      -10.0,
+      8.0,
+      -2.0,
+      2.0
+    ],
+    "forest_minus_rule_mean_points": -0.5,
+    "forest_minus_rule_interval_90": [
+      -6.0,
+      5.0
+    ],
+    "sealed_rule_wilson_90": [
+      0.9152,
+      0.9955
+    ],
+    "sealed_forest_wilson_90": [
+      0.9487,
+      1.0
+    ],
+    "shadow_lift_points": [
+      -6.4,
+      16.5,
+      65.6,
+      -3.3
+    ],
+    "shadow_lift_mean_points": 18.1,
+    "shadow_lift_interval_90": [
+      -4.1,
+      47.6
+    ]
+  },
+  "feature_worth": {
+    "open": {
+      "ablation_auc": {
+        "without_log_imp_mar": 0.7183,
+        "without_active_days": 0.7307,
+        "without_pos_mar": 0.6949,
+        "without_ctr_mar": 0.7101,
+        "without_momentum_in_month": 0.6058,
+        "all_five": 0.7162
+      },
+      "momentum_alone": {
+        "auc": 0.7036,
+        "precision_at_50": 0.8569
+      }
+    },
+    "sealed": {
+      "ablation_auc": {
+        "without_log_imp_mar": 0.6871,
+        "without_active_days": 0.6936,
+        "without_pos_mar": 0.6958,
+        "without_ctr_mar": 0.6599,
+        "without_momentum_in_month": 0.6268,
+        "all_five": 0.6926
+      },
+      "momentum_alone": {
+        "auc": 0.6588,
+        "precision_at_50": 0.9127
+      },
+      "train_base_rate": 0.6016,
+      "judged_base_rate": 0.7362
+    }
+  },
+  "population_audit": {
+    "largest_client_share_of_slice": 0.2902,
+    "top3_client_share_of_slice": 0.6425,
+    "held_out_clients_present_in_sealed_month": 8,
+    "held_out_clients_expected": 9,
+    "largest_client_share_of_held_out_pool": 0.9024,
+    "update_date_after_decision_share": 0.5114,
+    "optimized_date_after_decision_share": 0.2441,
+    "stale_flag_fires_on_pages": 10
+  },
+  "decision_envelope": {
+    "decision_date": "2026-05-31",
+    "scorable_pages": 82570,
+    "clients": 24,
+    "impressions_in_feature_month": 202738833,
+    "editor_capacity": 50,
+    "capacity_share_of_portfolio": 0.000606,
+    "base_rate_by_open_pair": {
+      "2026-01 to 2026-02": 0.2512,
+      "2026-02 to 2026-03": 0.229,
+      "2026-03 to 2026-04": 0.5378,
+      "2026-04 to 2026-05": 0.5377
+    }
+  },
+  "data": {
+    "release": "hf://datasets/FlyRank/internship-warehouse (build v20260703)",
+    "grain_probe_duplicate_rows": 0,
+    "feature_month_profile": {
+      "daily_rows": 11687376.0,
+      "first_day": "2026-05-01 00:00:00",
+      "last_day": "2026-05-31 00:00:00",
+      "clients": 66.0,
+      "pages": 389153.0,
+      "gsc_true_share": 0.3742,
+      "ga4_true_share": 0.0634,
+      "ga4_null_share": 0.2071
+    },
+    "clients_total": 104,
+    "clients_eligible": 40,
+    "clients_in_sealed_slice": 24,
+    "page_rows_in_feature_month": 237910,
+    "pages_scored_sealed": 82570,
+    "release_row_counts": {
+      "dim_clients": 104,
+      "dim_content": 519606,
+      "fact_content_query_90d": 2414248,
+      "fact_content_daily_performance": 78835655,
+      "fact_content_daily_performance_sample": 11694072
+    },
+    "release_star_schema_rows": 81769613
+  },
+  "limitations": {
+    "sealed_pool_largest_client_share": 0.9024,
+    "month_table": [
+      {
+        "pages": 63909,
+        "slice_base_rate": 0.2512,
+        "held_out_base_rate": 0.2358,
+        "median_next_over_now": 1.1385,
+        "share_of_pages_that_grew": 0.5967,
+        "pair": "2026-01 to 2026-02"
+      },
+      {
+        "pages": 72745,
+        "slice_base_rate": 0.229,
+        "held_out_base_rate": 0.194,
+        "median_next_over_now": 1.1875,
+        "share_of_pages_that_grew": 0.636,
+        "pair": "2026-02 to 2026-03"
+      },
+      {
+        "pages": 85453,
+        "slice_base_rate": 0.5378,
+        "held_out_base_rate": 0.4936,
+        "median_next_over_now": 0.7561,
+        "share_of_pages_that_grew": 0.3185,
+        "pair": "2026-03 to 2026-04"
+      },
+      {
+        "pages": 85518,
+        "slice_base_rate": 0.5377,
+        "held_out_base_rate": 0.388,
+        "median_next_over_now": 0.7552,
+        "share_of_pages_that_grew": 0.3071,
+        "pair": "2026-04 to 2026-05"
+      },
+      {
+        "pages": 82570,
+        "slice_base_rate": 0.7027,
+        "held_out_base_rate": 0.7362,
+        "median_next_over_now": 0.559,
+        "share_of_pages_that_grew": 0.1919,
+        "pair": "2026-05 to 2026-06"
+      }
+    ],
+    "sealed_declines": 19549,
+    "queue_recall": 0.00251,
+    "impressions_lost_by_pool": 27588638,
+    "impressions_in_front_of_editor": 634253,
+    "impressions_share_covered": 0.023,
+    "biggest_bleeds": [
+      {
+        "momentum_in_month": 0.449,
+        "rule_rank": 268,
+        "forest_rank": 1010
+      },
+      {
+        "momentum_in_month": 0.855,
+        "rule_rank": 19670,
+        "forest_rank": 11054
+      },
+      {
+        "momentum_in_month": 0.981,
+        "rule_rank": 19820,
+        "forest_rank": 19831
+      },
+      {
+        "momentum_in_month": 1.241,
+        "rule_rank": 13366,
+        "forest_rank": 13710
+      },
+      {
+        "momentum_in_month": 0.967,
+        "rule_rank": 10018,
+        "forest_rank": 19983
+      }
+    ]
   }
 }

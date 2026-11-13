@@ -7,12 +7,13 @@ features only. Its label is joined only after the pre-release gate says "release
 
 import pandas as pd
 
+from bleedtracker.comparisons import ablation, momentum_alone
 from bleedtracker.config import days_in_month
 from bleedtracker.deployments import ANCHOR_PAIR, PAIRS, SEALED_PAIR, Ladder
 from bleedtracker.features import build_features, load_page_months
 from bleedtracker.label import attach_label, load_next_month, without_outcome
 from bleedtracker.leakage import leak_probe
-from bleedtracker.model import deploy, split_clients
+from bleedtracker.model import Deployment, deploy, split_clients
 from bleedtracker.monitor import GateResult, alarm_row, pre_release_gate
 from bleedtracker.pipeline import labelled_month
 from bleedtracker.warehouse import Source
@@ -70,17 +71,36 @@ def prepare_frames(con, source: Source, original_momentum: bool = True):
     return frames, gate
 
 
+def forward_deployment(frames: dict, ladder: Ladder, test_pair: tuple) -> Deployment:
+    """Refit the forward deployment that judges `test_pair`."""
+    train = frames[PAIRS[PAIRS.index(test_pair) - 1]]
+    test = frames[test_pair]
+    return deploy(
+        train[train.client_hash_id.isin(ladder.train_clients)],
+        test[test.client_hash_id.isin(ladder.test_clients)],
+    )
+
+
 def leak_probes(frames: dict, ladder: Ladder) -> dict:
     """The planted leaks on the last open deployment and on the sealed one."""
     result = {}
     for name, test_pair in [("open", TRAINING_PAIR_FOR_SEALED), ("sealed", SEALED_PAIR)]:
-        train_pair = PAIRS[PAIRS.index(test_pair) - 1]
-        train = frames[train_pair]
-        test = frames[test_pair]
-        train = train[train.client_hash_id.isin(ladder.train_clients)]
-        test = test[test.client_hash_id.isin(ladder.test_clients)]
-        deployment = deploy(train, test)
-        result[name] = leak_probe(train, deployment.test, deployment.test.forest_score)
+        d = forward_deployment(frames, ladder, test_pair)
+        result[name] = leak_probe(d.train, d.test, d.test.forest_score)
+    return result
+
+
+def feature_worth(frames: dict, ladder: Ladder) -> dict:
+    """The ablation and momentum on its own, on the last open month and the sealed one."""
+    result = {}
+    for name, test_pair in [("open", TRAINING_PAIR_FOR_SEALED), ("sealed", SEALED_PAIR)]:
+        d = forward_deployment(frames, ladder, test_pair)
+        result[name] = {
+            "ablation_auc": ablation(d.train, d.test, d.test.forest_score),
+            "momentum_alone": momentum_alone(d.train, d.test),
+            "train_base_rate": round(float(d.train.label_declining.mean()), 4),
+            "judged_base_rate": round(float(d.test.label_declining.mean()), 4),
+        }
     return result
 
 
