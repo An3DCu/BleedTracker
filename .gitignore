@@ -1,0 +1,36 @@
+# secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+token.json
+client_secret*.json
+
+# OS / editor
+desktop.ini
+Thumbs.db
+.DS_Store
+.idea/
+.vscode/
+
+# logs
+*.log
+
+# Python / notebooks
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+
+# data never enters git
+data/
+*.csv
+*.parquet
+*.feather
+*.zip
+*.duckdb
