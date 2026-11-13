@@ -33,7 +33,10 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers -m \"not warehouse\""
+markers = [
+    "warehouse: reads the gated warehouse. Needs a token. Run with: pytest -m warehouse",
+]
 
 [tool.ruff]
 line-length = 100

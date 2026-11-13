@@ -1,0 +1,39 @@
+{
+  "about": "Values from my original analysis, copied exactly from its result files. Warehouse build v20260703. Rates are rounded to 4 decimals, as they were stored.",
+  "anchor": {
+    "feature_month": "2026-03",
+    "label_month": "2026-04",
+    "slice_pages": 85453,
+    "slice_clients": 27,
+    "slice_base_rate": 0.5378,
+    "train_pages": 59682,
+    "train_clients": 18,
+    "test_pages": 25771,
+    "test_clients": 9,
+    "test_base_rate": 0.4936,
+    "rule_precision_at_50": 0.9,
+    "forest_precision_at_50": 0.9,
+    "forest_auc": 0.6532,
+    "rule_zero_pages": 16556,
+    "rule_zero_declines": 6746,
+    "band_median_ctr_percent": {
+      "1-3": 0.1775,
+      "4-10": 0.1889,
+      "11-20": 0.1165,
+      "21+": 0.0
+    },
+    "reason_codes_in_slice": {
+      "slipping_and_underclicking": 12292,
+      "slipping_reachable_page": 8357,
+      "slipping_deep_page": 7136,
+      "holding_steady": 57668
+    },
+    "rule_precision_at_k": {
+      "10": 0.8,
+      "25": 0.88,
+      "50": 0.9,
+      "100": 0.91,
+      "250": 0.912
+    }
+  }
+}
