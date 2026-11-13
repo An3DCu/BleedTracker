@@ -38,14 +38,14 @@ def attach_label(frame: pd.DataFrame, next_month: pd.DataFrame) -> pd.DataFrame:
     below its feature-month impressions. A page missing from the label month counts
     as zero impressions.
     """
-    labelled = frame.merge(next_month, on="content_hash_id", how="left")
-    if len(labelled) != len(frame):
+    labeled = frame.merge(next_month, on="content_hash_id", how="left")
+    if len(labeled) != len(frame):
         raise ValueError("The label join changed the number of rows.")
-    labelled["seen_next_month"] = labelled.imp_next.notna().astype(int)
-    labelled["imp_next"] = labelled.imp_next.fillna(0.0)
-    threshold = (1 - DECLINE_DROP) * labelled.imp
-    labelled["label_declining"] = (labelled.imp_next < threshold).astype(int)
-    return labelled
+    labeled["seen_next_month"] = labeled.imp_next.notna().astype(int)
+    labeled["imp_next"] = labeled.imp_next.fillna(0.0)
+    threshold = (1 - DECLINE_DROP) * labeled.imp
+    labeled["label_declining"] = (labeled.imp_next < threshold).astype(int)
+    return labeled
 
 
 def without_outcome(frame: pd.DataFrame) -> pd.DataFrame:

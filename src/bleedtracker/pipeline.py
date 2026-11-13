@@ -8,7 +8,7 @@ from bleedtracker.model import Deployment, deploy, split_clients
 from bleedtracker.warehouse import Source
 
 
-def labelled_month(
+def labeled_month(
     con, source: Source, feature_month: str, label_month: str, original_momentum: bool = True
 ) -> pd.DataFrame:
     """One feature month with its label joined from the next month."""

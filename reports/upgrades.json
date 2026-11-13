@@ -1,0 +1,807 @@
+{
+  "about": "My upgrades, written by python -m bleedtracker upgrades. v1 is my original analysis. It is rebuilt and checked against reports/results.json before any upgrade runs. v2 adds the four fixes, the per-day features and rule v2's lines. Every result is post-hoc. v2's results on the open months are partly in-sample. Its lines were picked on those months' training clients.",
+  "settings": {
+    "v2_features": [
+      "log_impressions",
+      "active_share",
+      "position",
+      "ctr",
+      "momentum"
+    ],
+    "v2_slide_line": 0.65,
+    "v2_riser_gate": 1.2,
+    "a7_psi": 0.25,
+    "bootstrap_draws": 10000,
+    "seed": 42,
+    "top_k": 50
+  },
+  "fixes": {
+    "post_hoc": true,
+    "in_sample": false,
+    "empty_second_half_pages": {
+      "2026-01": 56,
+      "2026-02": 49,
+      "2026-03": 100,
+      "2026-04": 83,
+      "2026-05": 235
+    },
+    "coverage_verify_first": [
+      {
+        "deployment": "anchor 2026-03 to 2026-04",
+        "original": 13,
+        "fixed": 13
+      },
+      {
+        "deployment": "forward 2026-02 to 2026-03",
+        "original": 23,
+        "fixed": 23
+      },
+      {
+        "deployment": "forward 2026-03 to 2026-04",
+        "original": 13,
+        "fixed": 13
+      },
+      {
+        "deployment": "forward 2026-04 to 2026-05",
+        "original": 13,
+        "fixed": 13
+      },
+      {
+        "deployment": "sealed 2026-05 to 2026-06",
+        "original": 5,
+        "fixed": 5
+      }
+    ],
+    "a1": [
+      {
+        "release": "2026-02 to 2026-03",
+        "original": false,
+        "fixed": false
+      },
+      {
+        "release": "2026-03 to 2026-04",
+        "original": true,
+        "fixed": true
+      },
+      {
+        "release": "2026-04 to 2026-05",
+        "original": false,
+        "fixed": false
+      },
+      {
+        "release": "2026-05 to 2026-06",
+        "original": false,
+        "fixed": false
+      }
+    ],
+    "queue_csv_reasons": {
+      "original": {
+        "holding_steady": 19175,
+        "durable_riser": 7223,
+        "new_or_no_first_half_traffic": 96,
+        "slipping_and_underclicking": 45,
+        "quiet_risk_model_only": 10,
+        "measurement_suspicion": 5
+      },
+      "fixed": {
+        "holding_steady": 9259,
+        "durable_riser": 7223,
+        "slipping_reachable_page": 4574,
+        "slipping_and_underclicking": 3644,
+        "slipping_deep_page": 1743,
+        "new_or_no_first_half_traffic": 96,
+        "quiet_risk_model_only": 10,
+        "measurement_suspicion": 5
+      }
+    }
+  },
+  "sealed_gate_v2": {
+    "post_hoc": true,
+    "in_sample": false,
+    "pages_scored": 26554,
+    "pages_previous_month": 25595,
+    "pages_vs_previous_month": 1.0375,
+    "nulls_in_features": 0,
+    "psi_against_training": {
+      "log_impressions": 0.0044,
+      "active_days": 0.0301,
+      "position": 0.1459,
+      "ctr": 0.0214,
+      "momentum": 0.1396
+    },
+    "psi_against_previous_month": {
+      "log_impressions": 0.0049,
+      "active_days": 0.0262,
+      "position": 0.4224,
+      "ctr": 0.0149,
+      "momentum": 0.0896
+    },
+    "active_days_per_day_psi": 0.01,
+    "worst_psi": 0.1459,
+    "A1_population_moved": false,
+    "A2_features_drifted": false,
+    "decision": "RELEASE"
+  },
+  "deployments": [
+    {
+      "deployment": "anchor 2026-03 to 2026-04",
+      "post_hoc": true,
+      "in_sample": {
+        "v1": false,
+        "v2": true
+      },
+      "v1": {
+        "rule": {
+          "margin_points": 40.6,
+          "precision": 0.9,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0225,
+          "random_lost_impressions_share": 0.0019
+        },
+        "forest": {
+          "margin_points": 40.6,
+          "precision": 0.9,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0037,
+          "random_lost_impressions_share": 0.0019
+        },
+        "per_account_rule": {
+          "margin_points": 34.6,
+          "precision": 0.84,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0201,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 36.6,
+          "precision": 0.86,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0034,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": 0.0,
+          "interval_90": [
+            -8.0,
+            10.0
+          ]
+        }
+      },
+      "v2": {
+        "rule": {
+          "margin_points": 40.6,
+          "precision": 0.9,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0206,
+          "random_lost_impressions_share": 0.0019
+        },
+        "forest": {
+          "margin_points": 42.6,
+          "precision": 0.92,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0042,
+          "random_lost_impressions_share": 0.0019
+        },
+        "per_account_rule": {
+          "margin_points": 36.6,
+          "precision": 0.86,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0197,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 36.6,
+          "precision": 0.86,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0035,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": 2.0,
+          "interval_90": [
+            -6.0,
+            12.0
+          ]
+        }
+      }
+    },
+    {
+      "deployment": "forward 2026-02 to 2026-03",
+      "post_hoc": true,
+      "in_sample": {
+        "v1": false,
+        "v2": true
+      },
+      "v1": {
+        "rule": {
+          "margin_points": 68.6,
+          "precision": 0.88,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.0191,
+          "random_lost_impressions_share": 0.0024
+        },
+        "forest": {
+          "margin_points": 58.6,
+          "precision": 0.78,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.0363,
+          "random_lost_impressions_share": 0.0024
+        },
+        "per_account_rule": {
+          "margin_points": 65.4,
+          "precision": 0.848,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.0179,
+          "random_lost_impressions_share": 0.0024,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            37
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 58.6,
+          "precision": 0.78,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.036,
+          "random_lost_impressions_share": 0.0024,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            37
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": -10.0,
+          "interval_90": [
+            -24.0,
+            2.0
+          ]
+        }
+      },
+      "v2": {
+        "rule": {
+          "margin_points": 64.6,
+          "precision": 0.84,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.0181,
+          "random_lost_impressions_share": 0.0024
+        },
+        "forest": {
+          "margin_points": 58.6,
+          "precision": 0.78,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.0291,
+          "random_lost_impressions_share": 0.0024
+        },
+        "per_account_rule": {
+          "margin_points": 62.6,
+          "precision": 0.82,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.0177,
+          "random_lost_impressions_share": 0.0024,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            37
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 52.6,
+          "precision": 0.72,
+          "base_rate": 0.194,
+          "lost_impressions_share": 0.0291,
+          "random_lost_impressions_share": 0.0024,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            37
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": -6.0,
+          "interval_90": [
+            -20.0,
+            4.0
+          ]
+        }
+      }
+    },
+    {
+      "deployment": "forward 2026-03 to 2026-04",
+      "post_hoc": true,
+      "in_sample": {
+        "v1": false,
+        "v2": true
+      },
+      "v1": {
+        "rule": {
+          "margin_points": 40.6,
+          "precision": 0.9,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0225,
+          "random_lost_impressions_share": 0.0019
+        },
+        "forest": {
+          "margin_points": 48.6,
+          "precision": 0.98,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0007,
+          "random_lost_impressions_share": 0.0019
+        },
+        "per_account_rule": {
+          "margin_points": 34.6,
+          "precision": 0.84,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0201,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 44.6,
+          "precision": 0.94,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0008,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": 8.0,
+          "interval_90": [
+            0.0,
+            16.0
+          ]
+        }
+      },
+      "v2": {
+        "rule": {
+          "margin_points": 40.6,
+          "precision": 0.9,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0206,
+          "random_lost_impressions_share": 0.0019
+        },
+        "forest": {
+          "margin_points": 48.6,
+          "precision": 0.98,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0006,
+          "random_lost_impressions_share": 0.0019
+        },
+        "per_account_rule": {
+          "margin_points": 36.6,
+          "precision": 0.86,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0197,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 44.6,
+          "precision": 0.94,
+          "base_rate": 0.4936,
+          "lost_impressions_share": 0.0006,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            2,
+            3,
+            4,
+            36
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": 8.0,
+          "interval_90": [
+            2.0,
+            18.0
+          ]
+        }
+      }
+    },
+    {
+      "deployment": "forward 2026-04 to 2026-05",
+      "post_hoc": true,
+      "in_sample": {
+        "v1": false,
+        "v2": true
+      },
+      "v1": {
+        "rule": {
+          "margin_points": 57.2,
+          "precision": 0.96,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.0293,
+          "random_lost_impressions_share": 0.002
+        },
+        "forest": {
+          "margin_points": 55.2,
+          "precision": 0.94,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.0045,
+          "random_lost_impressions_share": 0.002
+        },
+        "per_account_rule": {
+          "margin_points": 57.2,
+          "precision": 0.96,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.0276,
+          "random_lost_impressions_share": 0.002,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            3,
+            37
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 55.2,
+          "precision": 0.94,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.0039,
+          "random_lost_impressions_share": 0.002,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            3,
+            37
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": -2.0,
+          "interval_90": [
+            -8.0,
+            4.0
+          ]
+        }
+      },
+      "v2": {
+        "rule": {
+          "margin_points": 57.2,
+          "precision": 0.96,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.0244,
+          "random_lost_impressions_share": 0.002
+        },
+        "forest": {
+          "margin_points": 55.2,
+          "precision": 0.94,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.0046,
+          "random_lost_impressions_share": 0.002
+        },
+        "per_account_rule": {
+          "margin_points": 53.2,
+          "precision": 0.92,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.0226,
+          "random_lost_impressions_share": 0.002,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            3,
+            37
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 55.2,
+          "precision": 0.94,
+          "base_rate": 0.388,
+          "lost_impressions_share": 0.004,
+          "random_lost_impressions_share": 0.002,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            2,
+            3,
+            37
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": -2.0,
+          "interval_90": [
+            -8.0,
+            4.0
+          ]
+        }
+      }
+    },
+    {
+      "deployment": "sealed 2026-05 to 2026-06",
+      "post_hoc": true,
+      "in_sample": {
+        "v1": false,
+        "v2": false
+      },
+      "v1": {
+        "rule": {
+          "margin_points": 24.4,
+          "precision": 0.98,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.023,
+          "random_lost_impressions_share": 0.0019
+        },
+        "forest": {
+          "margin_points": 26.4,
+          "precision": 1.0,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.0055,
+          "random_lost_impressions_share": 0.0019
+        },
+        "per_account_rule": {
+          "margin_points": 18.7,
+          "precision": 0.9233,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.0215,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            3,
+            39
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 22.4,
+          "precision": 0.96,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.0048,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            3,
+            39
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": 2.0,
+          "interval_90": [
+            0.0,
+            6.0
+          ]
+        }
+      },
+      "v2": {
+        "rule": {
+          "margin_points": 24.4,
+          "precision": 0.98,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.0206,
+          "random_lost_impressions_share": 0.0019
+        },
+        "forest": {
+          "margin_points": 26.4,
+          "precision": 1.0,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.0059,
+          "random_lost_impressions_share": 0.0019
+        },
+        "per_account_rule": {
+          "margin_points": 20.7,
+          "precision": 0.9433,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.0196,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            3,
+            39
+          ]
+        },
+        "per_account_forest": {
+          "margin_points": 22.4,
+          "precision": 0.96,
+          "base_rate": 0.7362,
+          "lost_impressions_share": 0.0047,
+          "random_lost_impressions_share": 0.0019,
+          "slots_per_client": [
+            1,
+            1,
+            1,
+            1,
+            2,
+            2,
+            3,
+            39
+          ]
+        },
+        "bootstrap": {
+          "forest_minus_rule_points": 2.0,
+          "interval_90": [
+            0.0,
+            6.0
+          ]
+        }
+      }
+    }
+  ],
+  "a7": {
+    "post_hoc": true,
+    "in_sample": false,
+    "releases": [
+      {
+        "release": "2026-02 to 2026-03",
+        "psi_against_previous_month": {
+          "log_impressions": 0.0219,
+          "active_days": 0.0475,
+          "position": 0.1158,
+          "ctr": 0.0064,
+          "momentum": 0.054
+        },
+        "worst_psi": 0.1158,
+        "A7_drifted_since_last_month": false
+      },
+      {
+        "release": "2026-03 to 2026-04",
+        "psi_against_previous_month": {
+          "log_impressions": 0.0036,
+          "active_days": 0.0658,
+          "position": 0.0714,
+          "ctr": 0.0048,
+          "momentum": 0.2841
+        },
+        "worst_psi": 0.2841,
+        "A7_drifted_since_last_month": true
+      },
+      {
+        "release": "2026-04 to 2026-05",
+        "psi_against_previous_month": {
+          "log_impressions": 0.0019,
+          "active_days": 0.0014,
+          "position": 0.0636,
+          "ctr": 0.0042,
+          "momentum": 0.0553
+        },
+        "worst_psi": 0.0636,
+        "A7_drifted_since_last_month": false
+      },
+      {
+        "release": "2026-05 to 2026-06",
+        "psi_against_previous_month": {
+          "log_impressions": 0.0049,
+          "active_days": 0.0026,
+          "position": 0.4224,
+          "ctr": 0.0149,
+          "momentum": 0.0395
+        },
+        "worst_psi": 0.4224,
+        "A7_drifted_since_last_month": true
+      }
+    ]
+  },
+  "originals_checked": {
+    "numbers": 396,
+    "matching": 396
+  }
+}

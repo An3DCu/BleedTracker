@@ -15,7 +15,7 @@ from bleedtracker.label import attach_label, load_next_month, without_outcome
 from bleedtracker.leakage import leak_probe
 from bleedtracker.model import Deployment, deploy, split_clients
 from bleedtracker.monitor import GateResult, alarm_row, month_over_month, pre_release_gate
-from bleedtracker.pipeline import labelled_month
+from bleedtracker.pipeline import labeled_month
 from bleedtracker.warehouse import Source
 
 OPEN_PAIRS = [pair for pair in PAIRS if pair != SEALED_PAIR]
@@ -28,7 +28,7 @@ class ReleaseHeld(RuntimeError):
 
 def load_open_frames(con, source: Source, original_momentum: bool = True) -> dict:
     """The four open months, each with its label."""
-    return {pair: labelled_month(con, source, *pair, original_momentum) for pair in OPEN_PAIRS}
+    return {pair: labeled_month(con, source, *pair, original_momentum) for pair in OPEN_PAIRS}
 
 
 def load_sealed_features(con, source: Source, original_momentum: bool = True) -> pd.DataFrame:
@@ -36,7 +36,9 @@ def load_sealed_features(con, source: Source, original_momentum: bool = True) ->
     return build_features(load_page_months(con, source, SEALED_PAIR[0]), original_momentum)
 
 
-def gate_sealed_month(open_frames: dict, sealed_features: pd.DataFrame) -> GateResult:
+def gate_sealed_month(
+    open_frames: dict, sealed_features: pd.DataFrame, original_a1: bool = True
+) -> GateResult:
     """Run the pre-release gate on the sealed month, from the open months only."""
     train_clients, test_clients = split_clients(open_frames[ANCHOR_PAIR])
     before = open_frames[TRAINING_PAIR_FOR_SEALED]
@@ -46,6 +48,7 @@ def gate_sealed_month(open_frames: dict, sealed_features: pd.DataFrame) -> GateR
         previous=before[before.client_hash_id.isin(test_clients)],
         train_days=days_in_month(TRAINING_PAIR_FOR_SEALED[0]),
         score_days=days_in_month(SEALED_PAIR[0]),
+        original_a1=original_a1,
     )
 
 
@@ -63,7 +66,7 @@ def open_sealed_month(
 
 
 def prepare_frames(con, source: Source, original_momentum: bool = True):
-    """Every labelled month, with the sealed one opened through the gate."""
+    """Every labeled month. The sealed one opens through the gate."""
     frames = load_open_frames(con, source, original_momentum)
     sealed_features = load_sealed_features(con, source, original_momentum)
     gate = gate_sealed_month(frames, sealed_features)
@@ -104,7 +107,7 @@ def feature_worth(frames: dict, ladder: Ladder) -> dict:
     return result
 
 
-def held_out_alarms(frames: dict, ladder: Ladder) -> list[dict]:
+def held_out_alarms(frames: dict, ladder: Ladder, original_a1: bool = True) -> list[dict]:
     """The six alarms for each forward release, in time order."""
     rows = []
     for i, (before_pair, now_pair) in enumerate(zip(PAIRS, PAIRS[1:], strict=False)):
@@ -119,6 +122,7 @@ def held_out_alarms(frames: dict, ladder: Ladder) -> list[dict]:
             previous,
             days_in_month(before_pair[0]),
             days_in_month(now_pair[0]),
+            original_a1=original_a1,
         )
         rows.append(
             alarm_row(

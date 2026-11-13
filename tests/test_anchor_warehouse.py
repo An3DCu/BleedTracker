@@ -7,7 +7,7 @@ import pytest
 from sklearn.metrics import roc_auc_score
 
 from bleedtracker.metrics import precision_at_k
-from bleedtracker.pipeline import anchor_deployment, labelled_month
+from bleedtracker.pipeline import anchor_deployment, labeled_month
 from bleedtracker.reference import load_reference
 from bleedtracker.rule import reason_code
 from bleedtracker.warehouse import MissingTokenError, Source, connect, read_token
@@ -24,7 +24,7 @@ def anchor():
     except MissingTokenError:
         pytest.skip("No Hugging Face token.")
     con = connect(token)
-    frame = labelled_month(con, Source(), REFERENCE["feature_month"], REFERENCE["label_month"])
+    frame = labeled_month(con, Source(), REFERENCE["feature_month"], REFERENCE["label_month"])
     deployment, train_clients, test_clients = anchor_deployment(frame)
     return frame, deployment, train_clients, test_clients
 
