@@ -21,10 +21,18 @@ OLD_NAMES = {
 }
 
 
+def new_name(key: str) -> str:
+    """Today's name for a key. A key like "without_pos_mar" keeps its prefix."""
+    if key.startswith("without_"):
+        feature = key.removeprefix("without_")
+        return "without_" + OLD_NAMES.get(feature, feature)
+    return OLD_NAMES.get(key, key)
+
+
 def rename(value):
     """Rename every dictionary key that has a new name, at any depth."""
     if isinstance(value, dict):
-        return {OLD_NAMES.get(key, key): rename(item) for key, item in value.items()}
+        return {new_name(key): rename(item) for key, item in value.items()}
     if isinstance(value, list):
         return [rename(item) for item in value]
     return value

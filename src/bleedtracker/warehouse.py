@@ -50,18 +50,21 @@ def _quote(text: str) -> str:
 
 @dataclass(frozen=True)
 class Source:
-    """Where the warehouse tables live: the Hugging Face release or a local folder."""
+    """Where the warehouse tables live. That is the Hugging Face release or a local folder."""
 
     root: str = RELEASE
 
+    def table(self, path: str) -> str:
+        """SQL that reads the parquet files at `path` under the root."""
+        return f"read_parquet({_quote(self.root + '/' + path)})"
+
     def fact(self, month: str) -> str:
         """SQL that reads one month of the daily fact table."""
-        path = f"{self.root}/fact_content_daily_performance/month={month}/*.parquet"
-        return f"read_parquet({_quote(path)})"
+        return self.table(f"fact_content_daily_performance/month={month}/*.parquet")
 
     def dim_clients(self) -> str:
         """SQL that reads the client table."""
-        return f"read_parquet({_quote(self.root + '/dim_clients.parquet')})"
+        return self.table("dim_clients.parquet")
 
 
 def connect(token: str | None = None) -> duckdb.DuckDBPyConnection:

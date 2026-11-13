@@ -54,14 +54,18 @@ def plans() -> list[Plan]:
 
 @dataclass
 class Ladder:
-    """Everything the five deployments produce."""
+    """Everything the five deployments produce.
 
-    train_clients: set
-    test_clients: set
+    The client sets and the queues hold page and client ids. They stay out of the printed form.
+    An error message never shows them.
+    """
+
+    train_clients: set = field(repr=False)
+    test_clients: set = field(repr=False)
     rows: list[dict] = field(default_factory=list)
     gate_effects: list[dict] = field(default_factory=list)
     shadow_queue: list[dict] = field(default_factory=list)
-    queues: dict = field(default_factory=dict)
+    queues: dict = field(default_factory=dict, repr=False)
 
 
 def run_deployments(frames: dict, original_coverage: bool = True) -> Ladder:
